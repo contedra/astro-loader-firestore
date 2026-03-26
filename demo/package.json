@@ -7,7 +7,9 @@
     "dev": "astro dev",
     "build": "astro build",
     "seed": "FIRESTORE_EMULATOR_HOST=localhost:8080 tsx seed/seed.ts",
-    "emulator": "firebase emulators:start --only firestore --project demo-contedra"
+    "emulator": "firebase emulators:start --only firestore --project demo-contedra",
+    "test": "vitest run",
+    "test:regression": "FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm seed && FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm build && pnpm test"
   },
   "dependencies": {
     "@contedra/astro-loader-firestore": "workspace:*",
@@ -17,6 +19,7 @@
   "devDependencies": {
     "firebase-tools": "^13.0.0",
     "tsx": "^4.0.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0"
   }
 }

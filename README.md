@@ -122,16 +122,36 @@ A demo Astro project is included in the `demo/` directory. It uses the Firestore
 
 ```bash
 # Start the Firestore emulator
-firebase emulators:start --only firestore
+cd demo
+pnpm emulator
 
 # In another terminal:
 cd demo
-pnpm install
 pnpm seed       # Seeds the emulator with sample data
 pnpm dev        # Starts the Astro dev server
 ```
 
 Set `FIRESTORE_EMULATOR_HOST=localhost:8080` to point the loader at the emulator.
+
+### Regression tests
+
+The demo includes snapshot tests that verify the built HTML output against stored snapshots. This detects regressions in markdown rendering, tag resolution, datetime formatting, etc.
+
+```bash
+# With the Firestore emulator running:
+cd demo
+pnpm test:regression    # seed → build → snapshot test
+
+# Or if dist/ is already built:
+pnpm test               # run snapshot tests only
+```
+
+To update snapshots after intentional changes:
+
+```bash
+cd demo
+pnpm test -- --update
+```
 
 ## License
 
