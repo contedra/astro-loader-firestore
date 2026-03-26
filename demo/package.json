@@ -9,7 +9,8 @@
     "seed": "FIRESTORE_EMULATOR_HOST=localhost:8080 tsx seed/seed.ts",
     "emulator": "firebase emulators:start --only firestore --project demo-contedra",
     "test": "vitest run",
-    "test:regression": "FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm seed && FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm build && pnpm test"
+    "test:regression": "FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm seed && FIRESTORE_EMULATOR_HOST=localhost:8080 pnpm build && pnpm test",
+    "test:ci": "firebase emulators:exec --only firestore --project demo-contedra 'pnpm test:regression'"
   },
   "dependencies": {
     "@contedra/astro-loader-firestore": "workspace:*",
