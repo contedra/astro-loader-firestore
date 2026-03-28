@@ -1,0 +1,22 @@
+export interface ModelProperty {
+  propertyName: string;
+  dataType: "string" | "datetime" | "relatedOne" | "relatedMany";
+  fieldType?: {
+    element: string;
+  };
+  require?: boolean;
+  defaultValue?: string;
+  relatedModel?: string;
+}
+
+export interface ModelDefinition {
+  id: string;
+  modelName: string;
+  properties: ModelProperty[];
+}
+
+export interface FirebaseConfig {
+  projectId: string;
+  /** Path to service account JSON (uses Application Default Credentials if omitted) */
+  credential?: string;
+}

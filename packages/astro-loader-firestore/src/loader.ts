@@ -1,8 +1,13 @@
 import { readFileSync } from "node:fs";
 import type { Loader } from "astro/loaders";
-import { loadModel, detectBodyField } from "./model.js";
-import { buildSchema } from "./schema.js";
-import { initFirestore, fetchDocuments, transformDocumentData } from "./firestore.js";
+import {
+  loadModel,
+  detectBodyField,
+  buildSchema,
+  initFirestore,
+  fetchDocuments,
+  transformDocumentData,
+} from "@contedra/core";
 import type { ContedraLoaderConfig } from "./types.js";
 
 export function contedraLoader(config: ContedraLoaderConfig): Loader {
