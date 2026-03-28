@@ -1,4 +1,4 @@
-import { z, type ZodTypeAny } from "astro/zod";
+import { z, type ZodTypeAny } from "zod";
 import type { ModelProperty } from "./types.js";
 
 export function dataTypeToZod(property: ModelProperty): ZodTypeAny {
