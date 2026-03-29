@@ -15,7 +15,8 @@ npx @contedra/md-importer \
   --md-dir ./content \
   --model ./models/blog_posts.json \
   --project-id your-project-id \
-  --credential ./service-account.json
+  --credential ./service-account.json \
+  --storage-bucket your-project-id.firebasestorage.app
 ```
 
 ### CLI Options
@@ -27,7 +28,11 @@ npx @contedra/md-importer \
 | `--project-id <id>` | Yes | Firebase project ID |
 | `--credential <path>` | No | Path to service account JSON (uses ADC if omitted) |
 | `--collection <name>` | No | Firestore collection name (defaults to `modelName`) |
+| `--storage-bucket <name>` | No* | Firebase Storage bucket name (e.g. `your-project.firebasestorage.app`) |
+| `--no-images` | No | Skip image extraction, upload, and URL replacement |
 | `--field-mapping <json>` | No | JSON mapping frontmatter keys to model properties |
+
+> \* `--storage-bucket` is required unless `--no-images` is set.
 
 ### Field Mapping
 
@@ -56,11 +61,13 @@ const result = await mdImporter({
   firebaseConfig: {
     projectId: "your-project-id",
     credential: "./service-account.json",
+    storageBucket: "your-project-id.firebasestorage.app",
   },
   fieldMapping: {
     article_title: "title",
     article_date: "publishedAt",
   },
+  // noImages: true,  // set to skip image processing
 });
 
 console.log(`Imported: ${result.imported.length}`);
