@@ -39,11 +39,28 @@ export function extractImageRefs(body: string): ImageRef[] {
 
 /**
  * Default image resolver: reads file relative to the Markdown file's directory.
+ * For absolute paths (starting with "/"), resolves against imageBaseDir if provided.
  */
 export async function defaultResolveImage(
   imagePath: string,
-  mdFilePath: string
+  mdFilePath: string,
+  imageBaseDir?: string
 ): Promise<Buffer> {
+  if (path.isAbsolute(imagePath)) {
+    if (!imageBaseDir) {
+      throw new Error(
+        `Absolute image path requires imageBaseDir: ${imagePath}`
+      );
+    }
+
+    const base = path.resolve(imageBaseDir);
+    const resolved = path.resolve(base, imagePath.slice(1));
+    const rel = path.relative(base, resolved);
+    if (rel.startsWith("..") || path.isAbsolute(rel)) {
+      throw new Error(`Image path escapes base directory: ${imagePath}`);
+    }
+    return readFile(resolved);
+  }
   const dir = path.dirname(mdFilePath);
   const resolved = path.resolve(dir, imagePath);
   return readFile(resolved);

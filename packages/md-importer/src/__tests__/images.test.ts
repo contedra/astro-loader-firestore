@@ -96,6 +96,57 @@ describe("replaceImageRefs", () => {
 });
 
 describe("defaultResolveImage", () => {
+  it("extracts absolute path image references", () => {
+    const body = "![banner](/images/banner.png)";
+    const refs = extractImageRefs(body);
+    expect(refs).toHaveLength(1);
+    expect(refs[0].originalPath).toBe("/images/banner.png");
+  });
+
+  it("resolves absolute paths using imageBaseDir", async () => {
+    const { writeFile, mkdir, rm } = await import("node:fs/promises");
+    const fixturesDir = path.join(import.meta.dirname, "fixtures");
+    const imageBaseDir = path.join(fixturesDir, "_test_public");
+    await mkdir(path.join(imageBaseDir, "images"), { recursive: true });
+    const testData = Buffer.from("public-dir-image");
+    await writeFile(path.join(imageBaseDir, "images", "banner.png"), testData);
+
+    try {
+      const result = await defaultResolveImage(
+        "/images/banner.png",
+        path.join(fixturesDir, "some-post.md"),
+        imageBaseDir
+      );
+      expect(result).toEqual(testData);
+    } finally {
+      await rm(imageBaseDir, { recursive: true });
+    }
+  });
+
+  it("rejects absolute paths when imageBaseDir is not set", async () => {
+    const fixturesDir = path.join(import.meta.dirname, "fixtures");
+
+    await expect(
+      defaultResolveImage(
+        "/images/banner.png",
+        path.join(fixturesDir, "some-post.md")
+      )
+    ).rejects.toThrow("Absolute image path requires imageBaseDir");
+  });
+
+  it("rejects path traversal attempts", async () => {
+    const fixturesDir = path.join(import.meta.dirname, "fixtures");
+    const imageBaseDir = path.join(fixturesDir, "_test_public");
+
+    await expect(
+      defaultResolveImage(
+        "/../../etc/passwd",
+        path.join(fixturesDir, "some-post.md"),
+        imageBaseDir
+      )
+    ).rejects.toThrow("Image path escapes base directory");
+  });
+
   it("resolves relative to the md file directory", async () => {
     const fixturesDir = path.join(import.meta.dirname, "fixtures");
     // Create a temporary image to test with

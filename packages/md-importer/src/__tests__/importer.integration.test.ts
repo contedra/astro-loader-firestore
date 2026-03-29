@@ -2,10 +2,13 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import path from "node:path";
 import { writeFile, mkdir, rm } from "node:fs/promises";
 import { initFirestore } from "@contedra/core";
+import { getStorage } from "firebase-admin/storage";
+import { getApps } from "firebase-admin/app";
 import { mdImporter } from "../importer.js";
 
 const FIXTURES = path.join(import.meta.dirname, "fixtures");
 const PROJECT_ID = "demo-md-importer";
+const STORAGE_BUCKET = `${PROJECT_ID}.firebasestorage.app`;
 
 /**
  * Integration tests require the Firestore emulator.
@@ -67,7 +70,7 @@ Second post body.
     const result = await mdImporter({
       mdDir: tmpDir,
       modelFile: path.join(FIXTURES, "blog_posts.json"),
-      firebaseConfig: { projectId: PROJECT_ID },
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
     });
 
     expect(result.errors).toEqual([]);
@@ -96,6 +99,15 @@ Second post body.
     expect(content).toContain("asset://blog_posts/hello-world/hero.png");
     expect(content).not.toContain("./images/hero.png");
 
+    // Verify image was uploaded to Storage
+    const appName = `contedra-${PROJECT_ID}`;
+    const app = getApps().find((a) => a.name === appName)!;
+    const bucket = getStorage(app).bucket();
+    const [exists] = await bucket
+      .file("assets/blog_posts/hello-world/hero.png")
+      .exists();
+    expect(exists).toBe(true);
+
     // Verify second post
     const secondDoc = await firestore
       .collection("blog_posts")
@@ -109,7 +121,7 @@ Second post body.
     const result = await mdImporter({
       mdDir: tmpDir,
       modelFile: path.join(FIXTURES, "blog_posts.json"),
-      firebaseConfig: { projectId: PROJECT_ID },
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
       collection: "custom_collection",
     });
 
@@ -141,7 +153,7 @@ Mapped content.
     const result = await mdImporter({
       mdDir: mappedDir,
       modelFile: path.join(FIXTURES, "blog_posts.json"),
-      firebaseConfig: { projectId: PROJECT_ID },
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
       collection: "mapped_posts",
       fieldMapping: {
         headline: "title",
@@ -181,7 +193,7 @@ title: Custom Resolve
     const result = await mdImporter({
       mdDir: customDir,
       modelFile: path.join(FIXTURES, "blog_posts.json"),
-      firebaseConfig: { projectId: PROJECT_ID },
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
       collection: "custom_resolve_posts",
       resolveImage: async (_imagePath, _mdFilePath) => {
         return customImageData;
@@ -200,5 +212,63 @@ title: Custom Resolve
     expect(content).toContain("asset://blog_posts/custom/photo.png");
 
     await rm(customDir, { recursive: true, force: true });
+  });
+
+  it("resolves absolute image paths with imageBaseDir", async () => {
+    // Create content dir with md referencing absolute image path
+    const absDir = path.join(tmpDir, "_abs_images");
+    await mkdir(absDir, { recursive: true });
+    await writeFile(
+      path.join(absDir, "abs-post.md"),
+      `---
+title: Absolute Image Post
+---
+
+![banner](/images/test.png)
+`
+    );
+
+    // Create a public directory with the image
+    const imageBaseDir = path.join(tmpDir, "_public");
+    await mkdir(path.join(imageBaseDir, "images"), { recursive: true });
+    await writeFile(
+      path.join(imageBaseDir, "images", "test.png"),
+      Buffer.from("fake-absolute-image-bytes")
+    );
+
+    const result = await mdImporter({
+      mdDir: absDir,
+      modelFile: path.join(FIXTURES, "blog_posts.json"),
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
+      collection: "abs_image_posts",
+      imageBaseDir,
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.imported).toHaveLength(1);
+
+    // Verify the body has asset:// URI replacement
+    const firestore = initFirestore({ projectId: PROJECT_ID });
+    const doc = await firestore
+      .collection("abs_image_posts")
+      .doc("abs-post")
+      .get();
+    expect(doc.exists).toBe(true);
+
+    const content = doc.data()!["content"] as string;
+    expect(content).toContain("asset://blog_posts/abs-post/test.png");
+    expect(content).not.toContain("/images/test.png");
+
+    // Verify image was uploaded to Storage
+    const appName = `contedra-${PROJECT_ID}`;
+    const app = getApps().find((a) => a.name === appName)!;
+    const bucket = getStorage(app).bucket();
+    const [exists] = await bucket
+      .file("assets/blog_posts/abs-post/test.png")
+      .exists();
+    expect(exists).toBe(true);
+
+    await rm(absDir, { recursive: true, force: true });
+    await rm(imageBaseDir, { recursive: true, force: true });
   });
 });
