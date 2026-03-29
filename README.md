@@ -28,21 +28,28 @@ pnpm lint
 
 ## Versioning
 
-All packages share the same version number. Use the built-in scripts to bump versions across all packages at once:
+All packages share the same version number. Use the built-in scripts to bump versions:
 
 ```bash
-pnpm version:patch   # 0.1.0 → 0.1.1
-pnpm version:minor   # 0.1.0 → 0.2.0
-pnpm version:major   # 0.1.0 → 1.0.0
+# Bump patch version (e.g., 0.1.0 → 0.1.1)
+pnpm version:patch
+
+# Bump minor version (e.g., 0.1.0 → 0.2.0)
+pnpm version:minor
+
+# Bump major version (e.g., 0.1.0 → 1.0.0)
+pnpm version:major
 ```
 
-The script outputs the new version (e.g., `v0.1.1`) for easy tagging. Full workflow:
+After bumping, commit and tag:
 
 ```bash
 pnpm version:patch   # outputs "v0.1.1"
 git add -A && git commit -m "chore: bump to v0.1.1"
 git tag v0.1.1 && git push origin main --tags
 ```
+
+Pushing the tag triggers the [publish workflow](./.github/workflows/publish.yml), which builds and publishes all packages to npm.
 
 ## Publishing
 
