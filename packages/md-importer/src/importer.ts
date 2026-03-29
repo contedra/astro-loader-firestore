@@ -14,7 +14,6 @@ import {
   assetStoragePath,
   assetUri,
   replaceImageRefs,
-  isImagePath,
 } from "./images.js";
 
 /**
@@ -93,23 +92,24 @@ export async function mdImporter(
         processedBody = replaceImageRefs(body, replacements);
       }
 
-      // Process frontmatter image paths
-      if (!config.noImages && bucket) {
-        for (const [key, value] of Object.entries(data)) {
-          if (typeof value === "string" && isImagePath(value)) {
-            const fileName = path.basename(value);
-            const storagePath = assetStoragePath(
-              model.modelName,
-              docId,
-              fileName
-            );
+      // Process frontmatter image fields
+      if (!config.noImages && bucket && config.imageFields?.length) {
+        for (const fieldName of config.imageFields) {
+          const value = data[fieldName];
+          if (typeof value !== "string" || !value) continue;
 
-            const imageBuffer = await resolveImage(value, absolutePath);
-            const file = bucket.file(storagePath);
-            await file.save(imageBuffer);
+          const fileName = path.basename(value);
+          const storagePath = assetStoragePath(
+            model.modelName,
+            docId,
+            fileName
+          );
 
-            data[key] = assetUri(model.modelName, docId, fileName);
-          }
+          const imageBuffer = await resolveImage(value, absolutePath);
+          const file = bucket.file(storagePath);
+          await file.save(imageBuffer);
+
+          data[fieldName] = assetUri(model.modelName, docId, fileName);
         }
       }
 

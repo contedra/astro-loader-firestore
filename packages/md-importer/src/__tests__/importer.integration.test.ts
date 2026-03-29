@@ -297,6 +297,7 @@ Post with a thumbnail in frontmatter.
       modelFile: path.join(FIXTURES, "blog_posts_with_thumbnail.json"),
       firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
       collection: "fm_image_posts",
+      imageFields: ["thumbnail"],
     });
 
     expect(result.errors).toEqual([]);
@@ -325,14 +326,14 @@ Post with a thumbnail in frontmatter.
     await rm(fmDir, { recursive: true, force: true });
   });
 
-  it("skips frontmatter image conversion when noImages is set", async () => {
-    const fmDir = path.join(tmpDir, "_fm_no_images");
+  it("does not convert frontmatter images when imageFields is not set", async () => {
+    const fmDir = path.join(tmpDir, "_fm_no_fields");
     await mkdir(fmDir, { recursive: true });
     await mkdir(path.join(fmDir, "images"), { recursive: true });
     await writeFile(
-      path.join(fmDir, "no-img-post.md"),
+      path.join(fmDir, "no-field-post.md"),
       `---
-title: No Images Post
+title: No Fields Post
 thumbnail: ./images/thumb.png
 ---
 
@@ -348,17 +349,16 @@ Body text.
       mdDir: fmDir,
       modelFile: path.join(FIXTURES, "blog_posts_with_thumbnail.json"),
       firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
-      collection: "fm_no_image_posts",
-      noImages: true,
+      collection: "fm_no_field_posts",
     });
 
     expect(result.errors).toEqual([]);
 
-    // Verify frontmatter image path was NOT converted
+    // Verify frontmatter image path was NOT converted (no imageFields specified)
     const firestore = initFirestore({ projectId: PROJECT_ID });
     const doc = await firestore
-      .collection("fm_no_image_posts")
-      .doc("no-img-post")
+      .collection("fm_no_field_posts")
+      .doc("no-field-post")
       .get();
     expect(doc.data()!["thumbnail"]).toBe("./images/thumb.png");
 

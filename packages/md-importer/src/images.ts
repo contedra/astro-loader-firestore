@@ -90,25 +90,6 @@ export function assetUri(
   return `asset://${modelName}/${contentId}/${fileName}`;
 }
 
-const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
-
-/**
- * Check if a string value looks like an image path.
- * Returns true for paths ending with common image extensions,
- * excluding URLs and asset:// URIs.
- */
-export function isImagePath(value: string): boolean {
-  if (
-    value.startsWith("http://") ||
-    value.startsWith("https://") ||
-    value.startsWith("asset://")
-  ) {
-    return false;
-  }
-  const ext = path.extname(value).toLowerCase();
-  return IMAGE_EXTENSIONS.includes(ext);
-}
-
 /**
  * Replace image references in Markdown body with asset:// URIs.
  */

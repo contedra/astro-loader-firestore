@@ -13,6 +13,8 @@ export interface MdImporterConfig {
   fieldMapping?: Record<string, string>;
   /** Directory for resolving absolute image paths (e.g. "./public") */
   imageBaseDir?: string;
+  /** Frontmatter field names that contain image paths (uploaded and converted to asset:// URIs) */
+  imageFields?: string[];
   /** Skip all image extraction, upload, and URL replacement */
   noImages?: boolean;
   /** Custom image resolver. Default: reads relative to the .md file */

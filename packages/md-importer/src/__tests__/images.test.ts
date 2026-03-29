@@ -6,7 +6,6 @@ import {
   assetUri,
   replaceImageRefs,
   defaultResolveImage,
-  isImagePath,
 } from "../images.js";
 
 describe("extractImageRefs", () => {
@@ -76,37 +75,6 @@ More text
     expect(refs).toHaveLength(2);
     expect(refs[0].originalPath).toBe("./a.png");
     expect(refs[1].originalPath).toBe("./b.jpg");
-  });
-});
-
-describe("isImagePath", () => {
-  it("detects common image extensions", () => {
-    expect(isImagePath("./hero.png")).toBe(true);
-    expect(isImagePath("/images/photo.jpg")).toBe(true);
-    expect(isImagePath("banner.jpeg")).toBe(true);
-    expect(isImagePath("icon.gif")).toBe(true);
-    expect(isImagePath("photo.webp")).toBe(true);
-    expect(isImagePath("logo.svg")).toBe(true);
-  });
-
-  it("is case insensitive for extensions", () => {
-    expect(isImagePath("photo.PNG")).toBe(true);
-    expect(isImagePath("photo.Jpg")).toBe(true);
-  });
-
-  it("rejects non-image paths", () => {
-    expect(isImagePath("document.pdf")).toBe(false);
-    expect(isImagePath("Hello World")).toBe(false);
-    expect(isImagePath("some text")).toBe(false);
-  });
-
-  it("skips URLs", () => {
-    expect(isImagePath("https://example.com/img.png")).toBe(false);
-    expect(isImagePath("http://example.com/img.jpg")).toBe(false);
-  });
-
-  it("skips asset:// URIs", () => {
-    expect(isImagePath("asset://blog/post/hero.png")).toBe(false);
   });
 });
 
