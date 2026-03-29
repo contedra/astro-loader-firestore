@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-/** Regex matching Markdown image syntax: ![alt](path) */
-const IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
+/** Regex matching Markdown image syntax: ![alt](path) or ![alt](path "title") */
+const IMAGE_REGEX = /!\[([^\]]*)\]\((\S+?)(?:\s+"[^"]*")?\)/g;
 
 export interface ImageRef {
   /** Full match string in the Markdown */
@@ -88,6 +88,25 @@ export function assetUri(
   fileName: string
 ): string {
   return `asset://${modelName}/${contentId}/${fileName}`;
+}
+
+const IMAGE_EXTENSIONS = [".png", ".jpg", ".jpeg", ".gif", ".webp", ".svg"];
+
+/**
+ * Check if a string value looks like an image path.
+ * Returns true for paths ending with common image extensions,
+ * excluding URLs and asset:// URIs.
+ */
+export function isImagePath(value: string): boolean {
+  if (
+    value.startsWith("http://") ||
+    value.startsWith("https://") ||
+    value.startsWith("asset://")
+  ) {
+    return false;
+  }
+  const ext = path.extname(value).toLowerCase();
+  return IMAGE_EXTENSIONS.includes(ext);
 }
 
 /**

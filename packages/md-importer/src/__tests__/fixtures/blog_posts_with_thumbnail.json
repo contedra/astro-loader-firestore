@@ -1,0 +1,10 @@
+{
+  "id": "blog_posts_thumb",
+  "modelName": "blog_posts_thumb",
+  "properties": [
+    { "propertyName": "title", "dataType": "string", "fieldType": { "element": "input" }, "require": true },
+    { "propertyName": "thumbnail", "dataType": "string", "fieldType": { "element": "input" } },
+    { "propertyName": "content", "dataType": "string", "fieldType": { "element": "markdown" } },
+    { "propertyName": "publishedAt", "dataType": "datetime" }
+  ]
+}
