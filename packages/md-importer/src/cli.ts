@@ -14,11 +14,21 @@ program
   .requiredOption("--project-id <id>", "Firebase project ID")
   .option("--credential <path>", "Path to service account JSON")
   .option("--collection <name>", "Firestore collection name (defaults to modelName)")
+  .option("--storage-bucket <name>", "Firebase Storage bucket name (e.g. your-project.firebasestorage.app)")
+  .option("--no-images", "Skip image extraction, upload, and URL replacement")
   .option(
     "--field-mapping <json>",
     "JSON object mapping frontmatter keys to model property names"
   )
   .action(async (opts) => {
+    if (opts.images !== false && !opts.storageBucket) {
+      console.error(
+        "Error: --storage-bucket is required unless --no-images is set.\n" +
+        `Hint: --storage-bucket ${opts.projectId}.firebasestorage.app`
+      );
+      process.exit(1);
+    }
+
     const fieldMapping = opts.fieldMapping
       ? (JSON.parse(opts.fieldMapping) as Record<string, string>)
       : undefined;
@@ -29,9 +39,11 @@ program
       firebaseConfig: {
         projectId: opts.projectId,
         credential: opts.credential,
+        ...(opts.storageBucket ? { storageBucket: opts.storageBucket } : {}),
       },
       collection: opts.collection,
       fieldMapping,
+      noImages: opts.images === false,
     });
 
     console.log(

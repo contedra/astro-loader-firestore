@@ -91,7 +91,8 @@ npx @contedra/md-importer \
   --md-dir ./content \
   --model ./models/blog_posts.json \
   --project-id your-project-id \
-  --credential ./service-account.json
+  --credential ./service-account.json \
+  --storage-bucket your-project-id.firebasestorage.app
 ```
 
 **CLI Options:**
@@ -103,7 +104,11 @@ npx @contedra/md-importer \
 | `--project-id <id>` | Yes | Firebase project ID |
 | `--credential <path>` | No | Path to service account JSON (uses ADC if omitted) |
 | `--collection <name>` | No | Firestore collection name (defaults to `modelName`) |
+| `--storage-bucket <name>` | No* | Firebase Storage bucket name (e.g. `your-project.firebasestorage.app`) |
+| `--no-images` | No | Skip image extraction, upload, and URL replacement |
 | `--field-mapping <json>` | No | JSON mapping frontmatter keys to model properties |
+
+> \* `--storage-bucket` is required unless `--no-images` is set.
 
 **Example with field mapping:**
 
@@ -211,13 +216,21 @@ pnpm version:minor
 pnpm version:major
 ```
 
-After bumping, commit and tag:
+## Release
+
+Use the release script to bump all packages, commit, tag, push, and create a GitHub release in one step:
 
 ```bash
-pnpm version:patch   # outputs "v0.1.1"
-git add -A && git commit -m "chore: bump to v0.1.1"
-git tag v0.1.1 && git push origin main --tags
+./scripts/release.sh patch   # 0.1.0 → 0.1.1
+./scripts/release.sh minor   # 0.1.1 → 0.2.0
+./scripts/release.sh major   # 0.2.0 → 1.0.0
 ```
+
+This will:
+1. Bump the version in all packages by the specified type
+2. Commit and tag as `v<new-version>`
+3. Push to `main` with tags
+4. Create a GitHub release with auto-generated notes
 
 Pushing the tag triggers the [publish workflow](./.github/workflows/publish.yml), which builds and publishes all packages to npm.
 

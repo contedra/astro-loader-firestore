@@ -39,7 +39,7 @@ export async function mdImporter(
   const firestore = initFirestore(config.firebaseConfig);
   const appName = `contedra-${config.firebaseConfig.projectId}`;
   const app = getApps().find((a) => a.name === appName)!;
-  const bucket = getStorage(app).bucket();
+  const bucket = config.noImages ? null : getStorage(app).bucket();
 
   const mdFiles = await findMarkdownFiles(config.mdDir);
 
@@ -56,7 +56,7 @@ export async function mdImporter(
       let processedBody = body;
 
       // Process images
-      if (bodyField && body) {
+      if (bodyField && body && !config.noImages && bucket) {
         const imageRefs = extractImageRefs(body);
         const replacements = new Map<string, string>();
 

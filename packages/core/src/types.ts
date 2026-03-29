@@ -19,4 +19,6 @@ export interface FirebaseConfig {
   projectId: string;
   /** Path to service account JSON (uses Application Default Credentials if omitted) */
   credential?: string;
+  /** Firebase Storage bucket name (e.g. "my-project.firebasestorage.app") */
+  storageBucket?: string;
 }

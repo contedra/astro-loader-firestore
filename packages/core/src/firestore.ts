@@ -12,6 +12,9 @@ export function initFirestore(config: FirebaseConfig) {
       {
         projectId: config.projectId,
         ...(config.credential ? { credential: cert(config.credential) } : {}),
+        ...(config.storageBucket
+          ? { storageBucket: config.storageBucket }
+          : {}),
       },
       appName
     );
