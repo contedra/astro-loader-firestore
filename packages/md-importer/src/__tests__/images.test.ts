@@ -57,6 +57,25 @@ More text
     expect(refs).toHaveLength(1);
     expect(refs[0].alt).toBe("");
   });
+
+  it("extracts path without title attribute", () => {
+    const body = '![hero](./images/hero.png "Hero Image")';
+    const refs = extractImageRefs(body);
+    expect(refs).toHaveLength(1);
+    expect(refs[0].originalPath).toBe("./images/hero.png");
+    expect(refs[0].fullMatch).toBe('![hero](./images/hero.png "Hero Image")');
+  });
+
+  it("handles mixed images with and without title", () => {
+    const body = `
+![a](./a.png "Title A")
+![b](./b.jpg)
+`;
+    const refs = extractImageRefs(body);
+    expect(refs).toHaveLength(2);
+    expect(refs[0].originalPath).toBe("./a.png");
+    expect(refs[1].originalPath).toBe("./b.jpg");
+  });
 });
 
 describe("assetStoragePath", () => {

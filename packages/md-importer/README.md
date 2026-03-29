@@ -31,6 +31,7 @@ npx @contedra/md-importer \
 | `--storage-bucket <name>` | No* | Firebase Storage bucket name (e.g. `your-project.firebasestorage.app`) |
 | `--no-images` | No | Skip image extraction, upload, and URL replacement |
 | `--image-base-dir <path>` | No | Directory for resolving absolute image paths (e.g. `./public`) |
+| `--image-fields <fields>` | No | Comma-separated frontmatter field names containing image paths (e.g. `heroImage,cover`) |
 | `--field-mapping <json>` | No | JSON mapping frontmatter keys to model properties |
 
 > \* `--storage-bucket` is required unless `--no-images` is set.
@@ -68,7 +69,8 @@ const result = await mdImporter({
     article_title: "title",
     article_date: "publishedAt",
   },
-  // noImages: true,  // set to skip image processing
+  imageFields: ["heroImage", "cover"],  // frontmatter fields containing image paths
+  // noImages: true,  // set to skip all image processing
 });
 
 console.log(`Imported: ${result.imported.length}`);

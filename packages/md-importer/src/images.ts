@@ -1,8 +1,8 @@
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 
-/** Regex matching Markdown image syntax: ![alt](path) */
-const IMAGE_REGEX = /!\[([^\]]*)\]\(([^)]+)\)/g;
+/** Regex matching Markdown image syntax: ![alt](path) or ![alt](path "title") */
+const IMAGE_REGEX = /!\[([^\]]*)\]\((\S+?)(?:\s+"[^"]*")?\)/g;
 
 export interface ImageRef {
   /** Full match string in the Markdown */

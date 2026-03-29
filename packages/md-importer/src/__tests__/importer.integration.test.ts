@@ -271,4 +271,97 @@ title: Absolute Image Post
     await rm(absDir, { recursive: true, force: true });
     await rm(imageBaseDir, { recursive: true, force: true });
   });
+
+  it("converts frontmatter image paths to asset:// URIs", async () => {
+    const fmDir = path.join(tmpDir, "_frontmatter_images");
+    await mkdir(fmDir, { recursive: true });
+    await mkdir(path.join(fmDir, "images"), { recursive: true });
+    await writeFile(
+      path.join(fmDir, "thumb-post.md"),
+      `---
+title: Thumbnail Post
+thumbnail: ./images/thumb.png
+publishedAt: 2024-04-01
+---
+
+Post with a thumbnail in frontmatter.
+`
+    );
+    await writeFile(
+      path.join(fmDir, "images", "thumb.png"),
+      Buffer.from("fake-thumbnail-bytes")
+    );
+
+    const result = await mdImporter({
+      mdDir: fmDir,
+      modelFile: path.join(FIXTURES, "blog_posts_with_thumbnail.json"),
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
+      collection: "fm_image_posts",
+      imageFields: ["thumbnail"],
+    });
+
+    expect(result.errors).toEqual([]);
+    expect(result.imported).toHaveLength(1);
+
+    // Verify frontmatter image was replaced with asset:// URI
+    const firestore = initFirestore({ projectId: PROJECT_ID });
+    const doc = await firestore
+      .collection("fm_image_posts")
+      .doc("thumb-post")
+      .get();
+    expect(doc.exists).toBe(true);
+    expect(doc.data()!["thumbnail"]).toBe(
+      "asset://blog_posts_thumb/thumb-post/thumb.png"
+    );
+
+    // Verify image was uploaded to Storage
+    const appName = `contedra-${PROJECT_ID}`;
+    const app = getApps().find((a) => a.name === appName)!;
+    const bucket = getStorage(app).bucket();
+    const [exists] = await bucket
+      .file("assets/blog_posts_thumb/thumb-post/thumb.png")
+      .exists();
+    expect(exists).toBe(true);
+
+    await rm(fmDir, { recursive: true, force: true });
+  });
+
+  it("does not convert frontmatter images when imageFields is not set", async () => {
+    const fmDir = path.join(tmpDir, "_fm_no_fields");
+    await mkdir(fmDir, { recursive: true });
+    await mkdir(path.join(fmDir, "images"), { recursive: true });
+    await writeFile(
+      path.join(fmDir, "no-field-post.md"),
+      `---
+title: No Fields Post
+thumbnail: ./images/thumb.png
+---
+
+Body text.
+`
+    );
+    await writeFile(
+      path.join(fmDir, "images", "thumb.png"),
+      Buffer.from("fake-bytes")
+    );
+
+    const result = await mdImporter({
+      mdDir: fmDir,
+      modelFile: path.join(FIXTURES, "blog_posts_with_thumbnail.json"),
+      firebaseConfig: { projectId: PROJECT_ID, storageBucket: STORAGE_BUCKET },
+      collection: "fm_no_field_posts",
+    });
+
+    expect(result.errors).toEqual([]);
+
+    // Verify frontmatter image path was NOT converted (no imageFields specified)
+    const firestore = initFirestore({ projectId: PROJECT_ID });
+    const doc = await firestore
+      .collection("fm_no_field_posts")
+      .doc("no-field-post")
+      .get();
+    expect(doc.data()!["thumbnail"]).toBe("./images/thumb.png");
+
+    await rm(fmDir, { recursive: true, force: true });
+  });
 });

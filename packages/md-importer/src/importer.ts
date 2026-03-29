@@ -92,6 +92,27 @@ export async function mdImporter(
         processedBody = replaceImageRefs(body, replacements);
       }
 
+      // Process frontmatter image fields
+      if (!config.noImages && bucket && config.imageFields?.length) {
+        for (const fieldName of config.imageFields) {
+          const value = data[fieldName];
+          if (typeof value !== "string" || !value) continue;
+
+          const fileName = path.basename(value);
+          const storagePath = assetStoragePath(
+            model.modelName,
+            docId,
+            fileName
+          );
+
+          const imageBuffer = await resolveImage(value, absolutePath);
+          const file = bucket.file(storagePath);
+          await file.save(imageBuffer);
+
+          data[fieldName] = assetUri(model.modelName, docId, fileName);
+        }
+      }
+
       // Build the Firestore document
       const docData: Record<string, unknown> = { ...data };
       if (bodyField) {

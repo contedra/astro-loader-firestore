@@ -17,6 +17,7 @@ program
   .option("--storage-bucket <name>", "Firebase Storage bucket name (e.g. your-project.firebasestorage.app)")
   .option("--no-images", "Skip image extraction, upload, and URL replacement")
   .option("--image-base-dir <path>", "Directory for resolving absolute image paths (e.g. ./public)")
+  .option("--image-fields <fields>", "Comma-separated frontmatter field names that contain image paths (e.g. heroImage,cover)")
   .option(
     "--field-mapping <json>",
     "JSON object mapping frontmatter keys to model property names"
@@ -46,6 +47,9 @@ program
       fieldMapping,
       noImages: opts.images === false,
       imageBaseDir: opts.imageBaseDir,
+      imageFields: opts.imageFields
+        ? opts.imageFields.split(",").map((s: string) => s.trim())
+        : undefined,
     });
 
     console.log(
