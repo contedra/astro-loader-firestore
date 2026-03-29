@@ -96,6 +96,33 @@ describe("replaceImageRefs", () => {
 });
 
 describe("defaultResolveImage", () => {
+  it("extracts absolute path image references", () => {
+    const body = "![banner](/images/banner.png)";
+    const refs = extractImageRefs(body);
+    expect(refs).toHaveLength(1);
+    expect(refs[0].originalPath).toBe("/images/banner.png");
+  });
+
+  it("resolves absolute paths using publicDir", async () => {
+    const { writeFile, mkdir, rm } = await import("node:fs/promises");
+    const fixturesDir = path.join(import.meta.dirname, "fixtures");
+    const publicDir = path.join(fixturesDir, "_test_public");
+    await mkdir(path.join(publicDir, "images"), { recursive: true });
+    const testData = Buffer.from("public-dir-image");
+    await writeFile(path.join(publicDir, "images", "banner.png"), testData);
+
+    try {
+      const result = await defaultResolveImage(
+        "/images/banner.png",
+        path.join(fixturesDir, "some-post.md"),
+        publicDir
+      );
+      expect(result).toEqual(testData);
+    } finally {
+      await rm(publicDir, { recursive: true });
+    }
+  });
+
   it("resolves relative to the md file directory", async () => {
     const fixturesDir = path.join(import.meta.dirname, "fixtures");
     // Create a temporary image to test with

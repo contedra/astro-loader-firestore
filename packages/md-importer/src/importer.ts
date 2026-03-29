@@ -34,7 +34,13 @@ export async function mdImporter(
   const model = await loadModel(config.modelFile);
   const bodyField = detectBodyField(model);
   const collectionName = config.collection ?? model.modelName;
-  const resolveImage = config.resolveImage ?? defaultResolveImage;
+  const publicDir = config.publicDir
+    ? path.resolve(config.publicDir)
+    : undefined;
+  const resolveImage =
+    config.resolveImage ??
+    ((imagePath: string, mdFilePath: string) =>
+      defaultResolveImage(imagePath, mdFilePath, publicDir));
 
   const firestore = initFirestore(config.firebaseConfig);
   const appName = `contedra-${config.firebaseConfig.projectId}`;

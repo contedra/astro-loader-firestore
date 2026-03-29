@@ -39,11 +39,17 @@ export function extractImageRefs(body: string): ImageRef[] {
 
 /**
  * Default image resolver: reads file relative to the Markdown file's directory.
+ * For absolute paths (starting with "/"), resolves against publicDir if provided.
  */
 export async function defaultResolveImage(
   imagePath: string,
-  mdFilePath: string
+  mdFilePath: string,
+  publicDir?: string
 ): Promise<Buffer> {
+  if (imagePath.startsWith("/") && publicDir) {
+    const resolved = path.join(publicDir, imagePath);
+    return readFile(resolved);
+  }
   const dir = path.dirname(mdFilePath);
   const resolved = path.resolve(dir, imagePath);
   return readFile(resolved);
