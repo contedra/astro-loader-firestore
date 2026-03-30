@@ -11,14 +11,14 @@ vi.mock("@contedra/core", () => ({
   transformDocumentData: vi.fn(),
   resolveAssetUriToUrl: vi.fn(),
   replaceAssetUris: vi.fn((text: string, replacer: (uri: string) => string) => {
-    return text.replace(/asset:\/\/[\w.\-/]+/g, (match: string) => replacer(match));
+    return text.replace(/asset:\/\/[^\s"'<>()[\]{}]+/g, (match: string) => replacer(match));
   }),
   replaceAssetUrisInRecord: vi.fn(
     (data: Record<string, unknown>, replacer: (uri: string) => string) => {
       const result: Record<string, unknown> = {};
       for (const [key, value] of Object.entries(data)) {
         if (typeof value === "string") {
-          result[key] = value.replace(/asset:\/\/[\w.\-/]+/g, (match: string) =>
+          result[key] = value.replace(/asset:\/\/[^\s"'<>()[\]{}]+/g, (match: string) =>
             replacer(match)
           );
         } else {
@@ -31,7 +31,7 @@ vi.mock("@contedra/core", () => ({
   downloadAsset: vi.fn(),
   copyAssetToOutput: vi.fn(),
   collectAssetUris: vi.fn((text: string) => {
-    const matches = text.match(/asset:\/\/[\w.\-/]+/g);
+    const matches = text.match(/asset:\/\/[^\s"'<>()[\]{}]+/g);
     return matches ? [...new Set(matches)] : [];
   }),
   collectAssetUrisFromRecord: vi.fn(
@@ -39,7 +39,7 @@ vi.mock("@contedra/core", () => ({
       const uris: string[] = [];
       for (const value of Object.values(data)) {
         if (typeof value === "string") {
-          const matches = value.match(/asset:\/\/[\w.\-/]+/g);
+          const matches = value.match(/asset:\/\/[^\s"'<>()[\]{}]+/g);
           if (matches) uris.push(...matches);
         }
       }

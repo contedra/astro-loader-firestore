@@ -13,7 +13,7 @@ pnpm add @contedra/astro-loader-firestore
 ## Usage
 
 ```typescript
-// src/content/config.ts
+// src/content.config.ts
 import { defineCollection } from "astro:content";
 import { contedraLoader } from "@contedra/astro-loader-firestore";
 
@@ -105,7 +105,7 @@ Cache the `.asset-cache` directory to speed up builds:
 - uses: actions/cache@v4
   with:
     path: .asset-cache
-    key: assets-${{ hashFiles('src/content/config.ts') }}
+    key: assets-${{ hashFiles('src/content.config.ts') }}
     restore-keys: assets-
 ```
 
@@ -128,7 +128,7 @@ export function resolveAssetUrl(uri: string): string {
 **After:**
 
 ```typescript
-// src/content/config.ts — add assets option
+// src/content.config.ts — add assets option
 assets: { mode: "url" }
 
 // In templates — URIs are already resolved:

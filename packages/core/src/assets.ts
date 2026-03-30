@@ -4,17 +4,46 @@ import path from "node:path";
 import type { App } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 
-const ASSET_URI_PATTERN = /asset:\/\/[\w.\-/]+/g;
+// Match until common URI terminators while allowing encoded/object-name characters.
+const ASSET_URI_PATTERN = /asset:\/\/[^\s"'<>()[\]{}]+/g;
+
+/**
+ * Validate that an asset path is safe for filesystem use.
+ * Rejects traversal sequences, absolute paths, and null bytes.
+ * Returns the normalized path, or null if unsafe.
+ */
+function sanitizeAssetPath(assetPath: string): string | null {
+  if (!assetPath) return null;
+
+  // Reject null bytes
+  if (assetPath.includes("\0")) return null;
+
+  // Reject absolute paths (Unix and Windows)
+  if (assetPath.startsWith("/") || assetPath.startsWith("\\")) return null;
+  if (/^[A-Za-z]:/.test(assetPath)) return null;
+
+  // Normalize and reject traversal
+  const normalized = path.posix.normalize(assetPath).replace(/^(\.\/)+/, "");
+  if (
+    normalized === "" ||
+    normalized === ".." ||
+    normalized.startsWith("../") ||
+    normalized.includes("/../")
+  ) {
+    return null;
+  }
+
+  return normalized;
+}
 
 /**
  * Parse an asset:// URI and return the asset path.
- * Returns null if the URI is not a valid asset:// URI.
+ * Returns null if the URI is not a valid asset:// URI or contains unsafe paths.
  */
 export function parseAssetUri(uri: string): string | null {
   if (!uri.startsWith("asset://")) return null;
   const assetPath = uri.slice("asset://".length);
-  if (!assetPath) return null;
-  return assetPath;
+  return sanitizeAssetPath(assetPath);
 }
 
 /**
@@ -93,7 +122,14 @@ export async function downloadAsset(
   assetPath: string,
   cacheDir: string
 ): Promise<boolean> {
-  const cachePath = path.join(cacheDir, assetPath);
+  const safePath = sanitizeAssetPath(assetPath);
+  if (!safePath) throw new Error(`Invalid asset path: ${assetPath}`);
+
+  const resolvedCache = path.resolve(cacheDir);
+  const cachePath = path.resolve(cacheDir, safePath);
+  if (!cachePath.startsWith(resolvedCache + path.sep)) {
+    throw new Error(`Asset path escapes cache directory: ${assetPath}`);
+  }
 
   if (existsSync(cachePath)) {
     return false;
@@ -102,7 +138,7 @@ export async function downloadAsset(
   const dir = path.dirname(cachePath);
   mkdirSync(dir, { recursive: true });
 
-  const storagePath = `assets/${assetPath}`;
+  const storagePath = `assets/${safePath}`;
   const bucket = getStorage(app).bucket();
   const file = bucket.file(storagePath);
 
@@ -119,8 +155,16 @@ export function copyAssetToOutput(
   cacheDir: string,
   outputDir: string
 ): void {
-  const src = path.join(cacheDir, assetPath);
-  const dest = path.join(outputDir, assetPath);
+  const safePath = sanitizeAssetPath(assetPath);
+  if (!safePath) throw new Error(`Invalid asset path: ${assetPath}`);
+
+  const resolvedOutput = path.resolve(outputDir);
+  const dest = path.resolve(outputDir, safePath);
+  if (!dest.startsWith(resolvedOutput + path.sep)) {
+    throw new Error(`Asset path escapes output directory: ${assetPath}`);
+  }
+
+  const src = path.resolve(cacheDir, safePath);
   const dir = path.dirname(dest);
   mkdirSync(dir, { recursive: true });
   copyFileSync(src, dest);

@@ -125,21 +125,24 @@ async function buildReplacer(
   // Get Firebase app for storage access
   const app = initFirebase(config.firebaseConfig);
 
-  // Download all assets
+  // Download all assets, tracking which ones succeed
   let downloadCount = 0;
   let cachedCount = 0;
+  const resolvedUris = new Set<string>();
+
   for (const uri of allUris) {
     const assetPath = parseAssetUri(uri);
     if (!assetPath) continue;
 
     try {
       const wasDownloaded = await downloadAsset(app, assetPath, cacheDir);
+      copyAssetToOutput(assetPath, cacheDir, outputDir);
+      resolvedUris.add(uri);
       if (wasDownloaded) {
         downloadCount++;
       } else {
         cachedCount++;
       }
-      copyAssetToOutput(assetPath, cacheDir, outputDir);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : String(error);
@@ -154,6 +157,7 @@ async function buildReplacer(
   }
 
   return (uri) => {
+    if (!resolvedUris.has(uri)) return uri;
     const assetPath = parseAssetUri(uri);
     if (!assetPath) return uri;
     return `${publicPath}/${assetPath}`;

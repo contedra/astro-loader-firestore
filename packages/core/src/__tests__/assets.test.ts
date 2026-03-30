@@ -21,6 +21,26 @@ describe("parseAssetUri", () => {
     expect(parseAssetUri("")).toBeNull();
     expect(parseAssetUri("asset://")).toBeNull();
   });
+
+  it("should reject directory traversal sequences", () => {
+    expect(parseAssetUri("asset://../../etc/passwd")).toBeNull();
+    expect(parseAssetUri("asset://posts/../../../secret")).toBeNull();
+    expect(parseAssetUri("asset://..")).toBeNull();
+  });
+
+  it("should reject absolute paths", () => {
+    expect(parseAssetUri("asset:///etc/passwd")).toBeNull();
+    expect(parseAssetUri("asset://\\windows\\system32")).toBeNull();
+    expect(parseAssetUri("asset://C:/windows/file")).toBeNull();
+  });
+
+  it("should reject null bytes", () => {
+    expect(parseAssetUri("asset://posts/file\0.png")).toBeNull();
+  });
+
+  it("should normalize safe paths with dot segments", () => {
+    expect(parseAssetUri("asset://posts/./file.png")).toBe("posts/file.png");
+  });
 });
 
 describe("buildStorageUrl", () => {
@@ -128,6 +148,12 @@ describe("collectAssetUris", () => {
 
   it("should return empty array for text without asset URIs", () => {
     expect(collectAssetUris("no assets here")).toEqual([]);
+  });
+
+  it("should match URIs with percent-encoded characters", () => {
+    const text = "![img](asset://posts/p1/my%20image.png)";
+    const uris = collectAssetUris(text);
+    expect(uris).toEqual(["asset://posts/p1/my%20image.png"]);
   });
 });
 
