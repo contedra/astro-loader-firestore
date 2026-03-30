@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    devDependencies:
+      firebase-tools:
+        specifier: ^13.35.1
+        version: 13.35.1(@types/node@25.5.0)
 
   demo:
     dependencies:

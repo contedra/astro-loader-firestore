@@ -21,6 +21,23 @@ jobs:
       - run: pnpm test
       - run: pnpm lint
 
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.node-version'
+          cache: 'pnpm'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: npx firebase emulators:exec --only storage --project test "pnpm -r --filter './packages/*' run --if-present test:integration"
+
   regression-test:
     runs-on: ubuntu-latest
     steps:
