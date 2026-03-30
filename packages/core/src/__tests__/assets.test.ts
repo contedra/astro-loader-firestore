@@ -128,6 +128,19 @@ describe("replaceAssetUrisInRecord", () => {
     expect(result.images).toEqual(["/assets/m/c/a.png", "/assets/m/c/b.png"]);
   });
 
+  it("should replace URIs in nested objects", () => {
+    const data = {
+      metadata: { imageUrl: "asset://m/c/thumb.jpg", count: 5 },
+    };
+    const result = replaceAssetUrisInRecord(data, (uri) =>
+      uri.replace("asset://", "/assets/")
+    );
+    expect((result.metadata as Record<string, unknown>).imageUrl).toBe(
+      "/assets/m/c/thumb.jpg"
+    );
+    expect((result.metadata as Record<string, unknown>).count).toBe(5);
+  });
+
   it("should not modify non-string values", () => {
     const date = new Date();
     const data = { published: date, count: 5, active: true };
@@ -170,5 +183,13 @@ describe("collectAssetUrisFromRecord", () => {
     expect(uris).toContain("asset://m/c/thumb.jpg");
     expect(uris).toContain("asset://m/c/a.png");
     expect(uris).toContain("asset://m/c/b.png");
+  });
+
+  it("should collect URIs from nested objects", () => {
+    const data = {
+      metadata: { imageUrl: "asset://m/c/nested.jpg" },
+    };
+    const uris = collectAssetUrisFromRecord(data);
+    expect(uris).toEqual(["asset://m/c/nested.jpg"]);
   });
 });

@@ -4,6 +4,12 @@ import path from "node:path";
 import type { App } from "firebase-admin/app";
 import { getStorage } from "firebase-admin/storage";
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  if (typeof value !== "object" || value === null) return false;
+  const proto = Object.getPrototypeOf(value);
+  return proto === Object.prototype || proto === null;
+}
+
 // Match until common URI terminators while allowing encoded/object-name characters.
 const ASSET_URI_PATTERN = /asset:\/\/[^\s"'<>()[\]{}]+/g;
 
@@ -110,6 +116,13 @@ function replaceValue(
   if (Array.isArray(value)) {
     return value.map((v) => replaceValue(v, replacer));
   }
+  if (isPlainObject(value)) {
+    const result: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value)) {
+      result[k] = replaceValue(v, replacer);
+    }
+    return result;
+  }
   return value;
 }
 
@@ -198,6 +211,10 @@ function collectFromValue(value: unknown, uris: Set<string>): void {
     }
   } else if (Array.isArray(value)) {
     for (const v of value) {
+      collectFromValue(v, uris);
+    }
+  } else if (isPlainObject(value)) {
+    for (const v of Object.values(value)) {
       collectFromValue(v, uris);
     }
   }

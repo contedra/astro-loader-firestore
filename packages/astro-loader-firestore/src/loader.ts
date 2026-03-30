@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import type { Loader } from "astro/loaders";
+import type { Loader, LoaderContext } from "astro/loaders";
 import {
   loadModel,
   detectBodyField,
@@ -19,10 +19,7 @@ import {
 } from "@contedra/core";
 import type { ContedraLoaderConfig } from "./types.js";
 
-interface AstroLogger {
-  warn(message: string): void;
-  info(message: string): void;
-}
+type AstroLogger = LoaderContext["logger"];
 
 export function contedraLoader(config: ContedraLoaderConfig): Loader {
   return {
