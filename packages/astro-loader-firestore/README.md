@@ -13,7 +13,7 @@ pnpm add @contedra/astro-loader-firestore
 ## Usage
 
 ```typescript
-// src/content/config.ts
+// src/content.config.ts
 import { defineCollection } from "astro:content";
 import { contedraLoader } from "@contedra/astro-loader-firestore";
 
@@ -37,8 +37,103 @@ export const collections = { blogPosts };
 | `modelFile` | `string` | Yes | Path to the Conteditor model JSON file |
 | `firebaseConfig.projectId` | `string` | Yes | Firebase project ID |
 | `firebaseConfig.credential` | `string` | No | Path to service account JSON (uses ADC if omitted) |
+| `firebaseConfig.storageBucket` | `string` | No | Firebase Storage bucket name (required for `assets`) |
 | `collection` | `string` | No | Firestore collection name (defaults to `modelName`) |
 | `bodyField` | `string` | No | Field to map to Astro's `body` (auto-detects `element: "markdown"` fields) |
+| `assets` | `AssetOptions` | No | Asset resolution options for `asset://` URIs (see below) |
+
+## Asset Resolution
+
+The loader can resolve `asset://` URIs (created by `@contedra/md-importer`) to either public Firebase Storage URLs or locally downloaded files.
+
+### URL Mode (default)
+
+Converts `asset://` URIs to Firebase Storage public URLs. No files are downloaded.
+
+```typescript
+const blogPosts = defineCollection({
+  loader: contedraLoader({
+    modelFile: "./models/blog_posts.json",
+    firebaseConfig: {
+      projectId: "your-project-id",
+      credential: "./service-account.json",
+      storageBucket: "your-project.firebasestorage.app",
+    },
+    assets: {}, // mode defaults to "url"
+  }),
+});
+```
+
+### Download Mode
+
+Downloads assets from Firebase Storage at build time and serves them as local files.
+
+```typescript
+const blogPosts = defineCollection({
+  loader: contedraLoader({
+    modelFile: "./models/blog_posts.json",
+    firebaseConfig: {
+      projectId: "your-project-id",
+      credential: "./service-account.json",
+      storageBucket: "your-project.firebasestorage.app",
+    },
+    assets: {
+      mode: "download",
+      // All options below are optional (defaults use collection name):
+      cacheDir: "./.asset-cache/blog_posts",   // default: ./.asset-cache/{collection}
+      outputDir: "./public/assets/blog_posts", // default: ./public/assets/{collection}
+      publicPath: "/assets/blog_posts",        // default: /assets/{collection}
+    },
+  }),
+});
+```
+
+### Asset Options
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `mode` | `"url" \| "download"` | `"url"` | Resolution mode |
+| `cacheDir` | `string` | `"./.asset-cache/{collection}"` | Local cache directory (download mode) |
+| `outputDir` | `string` | `"./public/assets/{collection}"` | Output directory for serving (download mode) |
+| `publicPath` | `string` | `"/assets/{collection}"` | URL prefix for resolved assets (download mode) |
+
+### CI Cache (GitHub Actions)
+
+Cache the `.asset-cache` directory to speed up builds:
+
+```yaml
+- uses: actions/cache@v4
+  with:
+    path: .asset-cache
+    key: assets-${{ hashFiles('src/content.config.ts') }}
+    restore-keys: assets-
+```
+
+### Migrating from `resolveAssetUrl()`
+
+If you previously resolved `asset://` URIs at render time with a custom helper, you can now remove it:
+
+**Before:**
+
+```typescript
+// src/lib/assets.ts
+export function resolveAssetUrl(uri: string): string {
+  return uri.replace("asset://", "https://firebasestorage.googleapis.com/...");
+}
+
+// In templates:
+<img src={resolveAssetUrl(post.data.thumbnail)} />
+```
+
+**After:**
+
+```typescript
+// src/content.config.ts — add assets option
+assets: { mode: "url" }
+
+// In templates — URIs are already resolved:
+<img src={post.data.thumbnail} />
+```
 
 ## Data Type Mapping
 

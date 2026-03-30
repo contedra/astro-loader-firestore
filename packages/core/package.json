@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "build": "tsc",
-    "test": "vitest run",
+    "test": "firebase emulators:exec --only storage --project test \"vitest run\"",
     "lint": "oxlint src"
   },
   "keywords": [
