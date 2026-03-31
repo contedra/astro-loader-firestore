@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, copyFileSync, readFileSync } from "node:fs";
+import { existsSync, mkdirSync, copyFileSync, readFileSync, unlinkSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { App } from "firebase-admin/app";
@@ -168,7 +168,8 @@ export async function downloadAsset(
         .update(readFileSync(cachePath))
         .digest("base64");
     } catch {
-      // Corrupt or unreadable cache entry: fall through to re-download
+      // Corrupt or unreadable cache entry: remove it and fall through to re-download
+      try { unlinkSync(cachePath); } catch { /* ignore cleanup errors */ }
       localMd5 = "";
     }
 
