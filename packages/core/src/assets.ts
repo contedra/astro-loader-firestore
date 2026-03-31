@@ -1,4 +1,5 @@
-import { existsSync, mkdirSync, copyFileSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { existsSync, mkdirSync, copyFileSync, readFileSync } from "node:fs";
 import { writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { App } from "firebase-admin/app";
@@ -156,16 +157,20 @@ export async function downloadAsset(
     throw new Error(`Asset path escapes cache directory: ${assetPath}`);
   }
 
+  const storagePath = `assets/${safePath}`;
+  const bucket = getStorage(app).bucket();
+  const file = bucket.file(storagePath);
+
   if (existsSync(cachePath)) {
-    return false;
+    const localMd5 = createHash("md5").update(readFileSync(cachePath)).digest("base64");
+    const [metadata] = await file.getMetadata();
+    if (localMd5 === metadata.md5Hash) {
+      return false;
+    }
   }
 
   const dir = path.dirname(cachePath);
   mkdirSync(dir, { recursive: true });
-
-  const storagePath = `assets/${safePath}`;
-  const bucket = getStorage(app).bucket();
-  const file = bucket.file(storagePath);
 
   const [contents] = await file.download();
   await writeFile(cachePath, contents);
