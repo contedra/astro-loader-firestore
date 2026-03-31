@@ -1,6 +1,6 @@
 {
   "name": "@contedra/md-importer",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "CLI tool to import YAML-frontmatter Markdown files + images into Firestore using model definition JSON",
   "type": "module",
   "main": "./dist/index.js",
