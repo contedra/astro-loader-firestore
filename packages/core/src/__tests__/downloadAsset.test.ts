@@ -90,6 +90,22 @@ describe("downloadAsset (md5 cache verification)", () => {
     expect(cached).toEqual(newContent);
   });
 
+  it("should reuse cached file when getMetadata fails", async () => {
+    const content = Buffer.from("cached-content");
+    const cachedPath = path.join(cacheDir, "model/doc/image.png");
+    mkdirSync(path.dirname(cachedPath), { recursive: true });
+    writeFileSync(cachedPath, content);
+
+    mockGetMetadata.mockRejectedValue(new Error("Network error"));
+
+    const result = await downloadAsset(fakeApp, "model/doc/image.png", cacheDir);
+
+    expect(result).toBe(false);
+    expect(mockDownload).not.toHaveBeenCalled();
+    // Cached file should remain unchanged
+    expect(readFileSync(cachedPath)).toEqual(content);
+  });
+
   it("should not create additional metadata files in cache directory", async () => {
     const content = Buffer.from("file-content");
     mockDownload.mockResolvedValue([content]);

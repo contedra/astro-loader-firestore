@@ -163,8 +163,13 @@ export async function downloadAsset(
 
   if (existsSync(cachePath)) {
     const localMd5 = createHash("md5").update(readFileSync(cachePath)).digest("base64");
-    const [metadata] = await file.getMetadata();
-    if (localMd5 === metadata.md5Hash) {
+    try {
+      const [metadata] = await file.getMetadata();
+      if (metadata.md5Hash && localMd5 === metadata.md5Hash) {
+        return false;
+      }
+    } catch {
+      // If metadata fetch fails, reuse cached file rather than failing the build
       return false;
     }
   }
