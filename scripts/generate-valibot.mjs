@@ -14,13 +14,14 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
+const SCHEMA_VERSION = "1.0.0";
 const SCHEMA_PATH = path.resolve(
   REPO_ROOT,
-  "packages/core/schemas/model-definition.schema.json"
+  `packages/core/schemas/${SCHEMA_VERSION}/model-definition.schema.json`
 );
 const OUT_PATH = path.resolve(
   REPO_ROOT,
-  "packages/core/generated/model-definition.valibot.ts"
+  `packages/core/generated/${SCHEMA_VERSION}/model-definition.valibot.ts`
 );
 
 // Map JSON Schema $defs name -> emitted const name.

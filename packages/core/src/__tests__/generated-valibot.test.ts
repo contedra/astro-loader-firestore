@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { safeParse } from "valibot";
-import { ModelDefinitionSchema } from "../../generated/model-definition.valibot.js";
+import { ModelDefinitionSchema } from "../../generated/1.0.0/model-definition.valibot.js";
 
 const fixturesDir = resolve(import.meta.dirname, "fixtures");
 

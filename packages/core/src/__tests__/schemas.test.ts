@@ -1,13 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { readFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { resolve } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
+import { SCHEMA_VERSION } from "../version.js";
 
-const schemasDir = resolve(import.meta.dirname, "..", "..", "schemas");
+const schemasRoot = resolve(import.meta.dirname, "..", "..", "schemas");
+const schemasDir = resolve(schemasRoot, SCHEMA_VERSION);
 const fixturesDir = resolve(import.meta.dirname, "fixtures");
-const corePkg = JSON.parse(
-  readFileSync(resolve(import.meta.dirname, "..", "..", "package.json"), "utf-8")
-) as { name: string; version: string };
 
 function readJson(filePath: string): Record<string, unknown> {
   return JSON.parse(readFileSync(filePath, "utf-8")) as Record<string, unknown>;
@@ -26,7 +25,7 @@ describe("JSON Schemas — ship layout", () => {
     ).toBe(true);
   });
 
-  it("each schema's $id is a version-pinned jsdelivr URL", () => {
+  it("each schema's $id is a schema-version-pinned jsdelivr URL", () => {
     const def = readJson(resolve(schemasDir, "model-definition.schema.json")) as {
       $id: string;
     };
@@ -34,7 +33,7 @@ describe("JSON Schemas — ship layout", () => {
       $id: string;
     };
     const pattern =
-      /^https:\/\/cdn\.jsdelivr\.net\/npm\/@contedra\/core@[^/]+\/schemas\/[a-z-]+\.schema\.json$/;
+      /^https:\/\/cdn\.jsdelivr\.net\/npm\/@contedra\/core\/schemas\/\d+\.\d+\.\d+\/[a-z-]+\.schema\.json$/;
     expect(def.$id).toMatch(pattern);
     expect(man.$id).toMatch(pattern);
   });
@@ -44,26 +43,45 @@ describe("JSON Schemas — ship layout", () => {
       properties: { models: { items: { $ref: string } } };
     };
     expect(man.properties.models.items.$ref).toMatch(
-      /^https:\/\/cdn\.jsdelivr\.net\/npm\/@contedra\/core@[^/]+\/schemas\/model-definition\.schema\.json$/
+      /^https:\/\/cdn\.jsdelivr\.net\/npm\/@contedra\/core\/schemas\/\d+\.\d+\.\d+\/model-definition\.schema\.json$/
     );
   });
 
-  it("$id placeholder gets rewritten to the package version after running the release script", () => {
-    // The on-disk schemas are kept with a 0.0.0-PLACEHOLDER tag in source so
-    // PRs do not have to bump the URL. The release-time rewrite script
-    // replaces it with the published @contedra/core version. We exercise
-    // that script on an in-memory copy here so the assertion is robust to
-    // whichever version is on disk at test time.
-    const placeholder =
-      "https://cdn.jsdelivr.net/npm/@contedra/core@0.0.0-PLACEHOLDER/schemas/model-manifest.schema.json";
-    const expected = `https://cdn.jsdelivr.net/npm/@contedra/core@${corePkg.version}/schemas/model-manifest.schema.json`;
-    const rewritten = placeholder.replace(
-      /(@contedra\/core@)[^/]+(\/schemas\/)/,
-      `$1${corePkg.version}$2`
-    );
-    expect(rewritten).toBe(expected);
+  it("each shipped schema's $id path matches the directory it lives in", () => {
+    // Walks every `schemas/<version>/` directory in source and asserts the
+    // version segment in $id matches the parent directory name. This is the
+    // CI lint that keeps source and URL in sync without the prepack rewrite.
+    for (const versionDir of readdirSync(schemasRoot)) {
+      const dirPath = resolve(schemasRoot, versionDir);
+      if (!statSync(dirPath).isDirectory()) continue;
+      for (const entry of readdirSync(dirPath)) {
+        if (!entry.endsWith(".schema.json")) continue;
+        const filePath = resolve(dirPath, entry);
+        const data = readJson(filePath) as { $id?: string };
+        expect(typeof data.$id, `${entry} has no $id`).toBe("string");
+        const m = /\/schemas\/([^/]+)\/[^/]+\.schema\.json$/.exec(data.$id ?? "");
+        expect(m, `${entry} $id is not a versioned schemas URL`).not.toBeNull();
+        expect(m![1], `${entry} $id version segment must equal directory ${versionDir}`).toBe(
+          versionDir
+        );
+      }
+    }
+  });
+
+  it("SCHEMA_VERSION matches the latest schema directory shipped in source", () => {
+    const dirs = readdirSync(schemasRoot)
+      .filter((name) => /^\d+\.\d+\.\d+$/.test(name))
+      .sort(compareSemver);
+    expect(dirs.length).toBeGreaterThan(0);
+    expect(dirs[dirs.length - 1]).toBe(SCHEMA_VERSION);
   });
 });
+
+function compareSemver(a: string, b: string): number {
+  const [aMa, aMi, aPa] = a.split(".").map(Number);
+  const [bMa, bMi, bPa] = b.split(".").map(Number);
+  return aMa - bMa || aMi - bMi || aPa - bPa;
+}
 
 describe("JSON Schemas — ajv validation", () => {
   const ajv = new Ajv2020({ allErrors: true, strict: false });

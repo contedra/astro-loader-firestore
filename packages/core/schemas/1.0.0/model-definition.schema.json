@@ -1,5 +1,5 @@
 {
-  "$id": "https://cdn.jsdelivr.net/npm/@contedra/core@0.0.0-PLACEHOLDER/schemas/model-definition.schema.json",
+  "$id": "https://cdn.jsdelivr.net/npm/@contedra/core/schemas/1.0.0/model-definition.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "ModelDefinition",
   "description": "A single content model definition (the Easy format). Describes the document id, the logical model name, and a list of typed properties used to render forms and persist data in headless-CMS-style backends.",

@@ -1,4 +1,5 @@
 export { loadModel, resolveModel, detectBodyField } from "./model.js";
+export { SCHEMA_VERSION } from "./version.js";
 export { buildSchema, dataTypeToZod } from "./schema.js";
 export { initFirebase, initFirestore, fetchDocuments, transformDocumentData } from "./firestore.js";
 export {

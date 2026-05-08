@@ -11,11 +11,11 @@
       "import": "./dist/src/index.js"
     },
     "./valibot": {
-      "types": "./dist/generated/model-definition.valibot.d.ts",
-      "import": "./dist/generated/model-definition.valibot.js"
+      "types": "./dist/generated/1.0.0/model-definition.valibot.d.ts",
+      "import": "./dist/generated/1.0.0/model-definition.valibot.js"
     },
-    "./schemas/model-definition.schema.json": "./schemas/model-definition.schema.json",
-    "./schemas/model-manifest.schema.json": "./schemas/model-manifest.schema.json",
+    "./schemas/1.0.0/model-definition.schema.json": "./schemas/1.0.0/model-definition.schema.json",
+    "./schemas/1.0.0/model-manifest.schema.json": "./schemas/1.0.0/model-manifest.schema.json",
     "./schemas/*": "./schemas/*"
   },
   "files": [
@@ -26,8 +26,7 @@
     "build": "tsc",
     "test": "firebase emulators:exec --only storage --project test \"vitest run\"",
     "lint": "oxlint src",
-    "generate:valibot": "node ../../scripts/generate-valibot.mjs",
-    "prepack": "node ../../scripts/rewrite-schema-ids.mjs"
+    "generate:valibot": "node ../../scripts/generate-valibot.mjs"
   },
   "keywords": [
     "headless-cms",
