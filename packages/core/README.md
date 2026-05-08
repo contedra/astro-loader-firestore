@@ -1,6 +1,6 @@
 # @contedra/core
 
-Core library for the Contedra toolkit — Firebase connection, Conteditor model parsing, and Zod schema generation.
+Core library for the contedra toolkit — Firebase connection, content model parsing, and Zod schema generation.
 
 ## Installation
 
@@ -12,7 +12,7 @@ pnpm add @contedra/core
 
 ### `loadModel(filePath: string, modelName?: string): Promise<ModelDefinition>`
 
-Loads a Conteditor model definition from a JSON file. Two file shapes are accepted:
+Loads a content model definition from a JSON file. Two file shapes are accepted:
 
 - **Easy format** — a single `ModelDefinition` object: `{ id, modelName, properties }`.
 - **Manifest format** — a `ModelManifest` wrapper: `{ models: [...] }` (carries multiple model definitions in a single file).

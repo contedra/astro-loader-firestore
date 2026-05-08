@@ -1,7 +1,7 @@
 {
   "name": "@contedra/astro-loader-firestore",
   "version": "0.2.2",
-  "description": "Astro Content Layer loader for Conteditor Firestore",
+  "description": "Astro Content Layer loader for Firestore collections backed by contedra content models",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -24,7 +24,8 @@
     "astro",
     "astro-loader",
     "firestore",
-    "conteditor",
+    "headless-cms",
+    "content-model",
     "cms"
   ],
   "author": "Contedra",

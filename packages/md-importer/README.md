@@ -1,6 +1,6 @@
 # @contedra/md-importer
 
-CLI tool and library to import YAML-frontmatter Markdown files (with images) into Firestore, using Conteditor model definition JSON for schema validation.
+CLI tool and library to import YAML-frontmatter Markdown files (with images) into Firestore, using a content model definition JSON for schema validation.
 
 ## Installation
 

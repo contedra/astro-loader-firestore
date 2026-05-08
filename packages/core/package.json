@@ -25,7 +25,8 @@
     "prepack": "node ../../scripts/rewrite-schema-ids.mjs"
   },
   "keywords": [
-    "conteditor",
+    "headless-cms",
+    "content-model",
     "firestore",
     "firebase"
   ],

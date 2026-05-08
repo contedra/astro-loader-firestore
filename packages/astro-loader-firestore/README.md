@@ -1,6 +1,6 @@
 # @contedra/astro-loader-firestore
 
-Astro Content Layer loader for Conteditor-managed Firestore collections. Loads content and exposes it through Astro's Content Layer API (v5+).
+Astro Content Layer loader for Firestore collections backed by contedra content models. Loads content and exposes it through Astro's Content Layer API (v5+).
 
 ## Installation
 
@@ -34,7 +34,7 @@ export const collections = { blogPosts };
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `modelFile` | `string` | Yes | Path to the Conteditor model JSON file (single `ModelDefinition` or `ModelManifest`) |
+| `modelFile` | `string` | Yes | Path to the content model JSON file (single `ModelDefinition` or `ModelManifest`) |
 | `modelName` | `string` | Conditional | Required when `modelFile` is a `ModelManifest` containing multiple models |
 | `firebaseConfig.projectId` | `string` | Yes | Firebase project ID |
 | `firebaseConfig.credential` | `string` | No | Path to service account JSON (uses ADC if omitted) |
@@ -154,8 +154,8 @@ assets: { mode: "url" }
 
 ## Data Type Mapping
 
-| Conteditor `dataType` | Zod Schema | Description |
-|------------------------|------------|-------------|
+| `dataType` | Zod Schema | Description |
+|------------|------------|-------------|
 | `string` | `z.string()` | Plain string |
 | `datetime` | `z.coerce.date()` | Firestore Timestamp converted to Date |
 | `relatedOne` | `z.string()` | Referenced document ID |

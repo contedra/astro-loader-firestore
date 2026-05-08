@@ -12,7 +12,7 @@ export interface AssetOptions {
 }
 
 export interface ContedraLoaderConfig {
-  /** Path to the Conteditor model JSON file (single ModelDefinition or ModelManifest) */
+  /** Path to the content model JSON file (single ModelDefinition or ModelManifest) */
   modelFile: string;
   /** Required when `modelFile` is a ModelManifest containing multiple models */
   modelName?: string;
