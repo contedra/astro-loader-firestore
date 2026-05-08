@@ -6,7 +6,7 @@ This is a public repository. All code, comments, commit messages, PR description
 
 ## Project Overview
 
-Monorepo for Conteditor ecosystem tools:
+Monorepo for contedra ecosystem tools:
 - `@contedra/core` — Firebase connection and Zod schema generation from model definition JSON
 - `@contedra/astro-loader-firestore` — Astro Content Layer loader for Firestore
 - `@contedra/md-importer` — CLI tool to import Markdown files into Firestore

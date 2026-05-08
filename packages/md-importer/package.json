@@ -24,7 +24,8 @@
     "lint": "oxlint src"
   },
   "keywords": [
-    "conteditor",
+    "headless-cms",
+    "content-model",
     "firestore",
     "firebase",
     "markdown",

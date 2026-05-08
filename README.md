@@ -1,13 +1,13 @@
 # Contedra Toolkit
 
-Tools for building content-driven sites with [Conteditor](https://github.com/contedra)-managed Firestore and Astro.
+Tools for building content-driven sites with contedra-managed content models on Firestore + Astro.
 
 ## Packages
 
 | Package | Description |
 |---------|-------------|
 | [`@contedra/core`](./packages/core) | Core library — Firebase connection, model parsing, and Zod schema generation |
-| [`@contedra/astro-loader-firestore`](./packages/astro-loader-firestore) | Astro Content Layer loader for Conteditor Firestore |
+| [`@contedra/astro-loader-firestore`](./packages/astro-loader-firestore) | Astro Content Layer loader for Firestore collections backed by contedra content models |
 | [`@contedra/md-importer`](./packages/md-importer) | CLI tool to import Markdown files + images into Firestore |
 
 ## Quick Start
@@ -42,7 +42,7 @@ export const collections = { blogPosts };
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `modelFile` | `string` | Yes | Path to the Conteditor model JSON file |
+| `modelFile` | `string` | Yes | Path to the content model JSON file |
 | `firebaseConfig.projectId` | `string` | Yes | Firebase project ID |
 | `firebaseConfig.credential` | `string` | No | Path to service account JSON (uses ADC if omitted) |
 | `collection` | `string` | No | Firestore collection name (defaults to `modelName`) |
@@ -50,8 +50,8 @@ export const collections = { blogPosts };
 
 #### Data Type Mapping
 
-| Conteditor `dataType` | Zod Schema | Description |
-|------------------------|------------|-------------|
+| `dataType` | Zod Schema | Description |
+|------------|------------|-------------|
 | `string` | `z.string()` | Plain string |
 | `datetime` | `z.coerce.date()` | Firestore Timestamp converted to Date |
 | `relatedOne` | `z.string()` | Referenced document ID |
@@ -161,7 +161,7 @@ const result = await mdImporter({
 
 ## Model JSON Format
 
-Both the Astro loader and Markdown importer use Conteditor model definition JSON files to define the schema of your content:
+Both the Astro loader and Markdown importer use content model definition JSON files to define the schema of your content:
 
 ```json
 {
@@ -180,6 +180,8 @@ Both the Astro loader and Markdown importer use Conteditor model definition JSON
 **Supported `dataType` values:** `string`, `datetime`, `relatedOne`, `relatedMany`
 
 A property with `"fieldType": { "element": "markdown" }` is automatically detected as the body field for Astro's content rendering.
+
+[Conteditor](https://github.com/CircleAround/conteditor) is a reference Headless CMS that produces content-model JSON files in this format.
 
 ## Demo
 

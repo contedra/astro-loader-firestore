@@ -1,0 +1,28 @@
+{
+  "models": [
+    {
+      "id": "blog_posts_v1",
+      "modelName": "blog_posts",
+      "properties": [
+        {
+          "propertyName": "title",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "require": true
+        }
+      ]
+    },
+    {
+      "id": "blog_posts_v2",
+      "modelName": "blog_posts",
+      "properties": [
+        {
+          "propertyName": "title",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "require": true
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/@contedra/core/schemas/1.0.0/model-manifest.schema.json",
+  "models": [
+    {
+      "id": "article",
+      "modelName": "article",
+      "properties": [
+        {
+          "propertyName": "title",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "require": true,
+          "searchPriority": "high"
+        },
+        {
+          "propertyName": "summary",
+          "dataType": "string",
+          "fieldType": { "element": "textarea" },
+          "max": 280,
+          "searchPriority": "normal"
+        },
+        {
+          "propertyName": "body",
+          "dataType": "string",
+          "fieldType": { "element": "markdown" },
+          "require": true,
+          "searchPriority": "normal"
+        },
+        {
+          "propertyName": "publishedAt",
+          "dataType": "datetime",
+          "require": true
+        },
+        {
+          "propertyName": "updatedAt",
+          "dataType": "datetime",
+          "onUpdate": "${now}"
+        },
+        {
+          "propertyName": "author",
+          "dataType": "relatedOne",
+          "relatedModel": "author",
+          "require": true
+        },
+        {
+          "propertyName": "categories",
+          "dataType": "relatedMany",
+          "relatedModel": "category"
+        }
+      ]
+    },
+    {
+      "id": "category",
+      "modelName": "category",
+      "properties": [
+        {
+          "propertyName": "name",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "require": true,
+          "min": 1,
+          "max": 64,
+          "searchPriority": "high"
+        },
+        {
+          "propertyName": "description",
+          "dataType": "string",
+          "fieldType": { "element": "markdown" },
+          "searchPriority": "low"
+        },
+        {
+          "propertyName": "slug",
+          "dataType": "string",
+          "fieldType": { "element": "select" },
+          "regex": "^[a-z][a-z0-9_-]*$"
+        }
+      ]
+    },
+    {
+      "id": "author",
+      "modelName": "author",
+      "properties": [
+        {
+          "propertyName": "displayName",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "require": true,
+          "searchPriority": "high"
+        },
+        {
+          "propertyName": "bio",
+          "dataType": "string",
+          "fieldType": { "element": "markdown" },
+          "searchPriority": "none"
+        },
+        {
+          "propertyName": "avatar",
+          "dataType": "string",
+          "fieldType": { "element": "input" },
+          "defaultValue": "asset://author/default-avatar.png"
+        }
+      ]
+    }
+  ]
+}

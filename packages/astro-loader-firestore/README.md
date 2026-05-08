@@ -1,6 +1,6 @@
 # @contedra/astro-loader-firestore
 
-Astro Content Layer loader for Conteditor-managed Firestore collections. Loads content and exposes it through Astro's Content Layer API (v5+).
+Astro Content Layer loader for Firestore collections backed by contedra content models. Loads content and exposes it through Astro's Content Layer API (v5+).
 
 ## Installation
 
@@ -34,13 +34,30 @@ export const collections = { blogPosts };
 
 | Option | Type | Required | Description |
 |--------|------|----------|-------------|
-| `modelFile` | `string` | Yes | Path to the Conteditor model JSON file |
+| `modelFile` | `string` | Yes | Path to the content model JSON file (single `ModelDefinition` or `ModelManifest`) |
+| `modelName` | `string` | Conditional | Required when `modelFile` is a `ModelManifest` containing multiple models |
 | `firebaseConfig.projectId` | `string` | Yes | Firebase project ID |
 | `firebaseConfig.credential` | `string` | No | Path to service account JSON (uses ADC if omitted) |
 | `firebaseConfig.storageBucket` | `string` | No | Firebase Storage bucket name (required for `assets`) |
 | `collection` | `string` | No | Firestore collection name (defaults to `modelName`) |
 | `bodyField` | `string` | No | Field to map to Astro's `body` (auto-detects `element: "markdown"` fields) |
 | `assets` | `AssetOptions` | No | Asset resolution options for `asset://` URIs (see below) |
+
+### Loading from a multi-model manifest file
+
+When the `modelFile` is a `ModelManifest` (`{ "models": [...] }`) carrying several models in one file, pass `modelName` to pick the entry to load:
+
+```typescript
+const blogPosts = defineCollection({
+  loader: contedraLoader({
+    modelFile: "./models/site-models.json",
+    modelName: "blog_posts",
+    firebaseConfig: { projectId: "your-project-id" },
+  }),
+});
+```
+
+For single-model files (`{ id, modelName, properties }`), `modelName` is optional. See [`@contedra/core`](../core/README.md#loadmodelfilepath-string-modelname-string-promisemodeldefinition) for the full selection matrix.
 
 ## Asset Resolution
 
@@ -137,8 +154,8 @@ assets: { mode: "url" }
 
 ## Data Type Mapping
 
-| Conteditor `dataType` | Zod Schema | Description |
-|------------------------|------------|-------------|
+| `dataType` | Zod Schema | Description |
+|------------|------------|-------------|
 | `string` | `z.string()` | Plain string |
 | `datetime` | `z.coerce.date()` | Firestore Timestamp converted to Date |
 | `relatedOne` | `z.string()` | Referenced document ID |
