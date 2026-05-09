@@ -1,6 +1,6 @@
 {
   "name": "@contedra/core",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Core library for Contedra toolkit — Firebase connection, model parsing, and schema generation",
   "type": "module",
   "main": "./dist/src/index.js",
@@ -11,8 +11,8 @@
       "import": "./dist/src/index.js"
     },
     "./valibot": {
-      "types": "./dist/generated/1.0.0/model-definition.valibot.d.ts",
-      "import": "./dist/generated/1.0.0/model-definition.valibot.js"
+      "types": "./dist/generated/1.0.0/index.d.ts",
+      "import": "./dist/generated/1.0.0/index.js"
     },
     "./schemas/1.0.0/model-definition.schema.json": "./schemas/1.0.0/model-definition.schema.json",
     "./schemas/1.0.0/model-manifest.schema.json": "./schemas/1.0.0/model-manifest.schema.json",
