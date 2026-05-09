@@ -2,7 +2,10 @@ import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { safeParse } from "valibot";
-import { ModelDefinitionSchema } from "../../generated/1.0.0/model-definition.valibot.js";
+import {
+  ModelDefinitionSchema,
+  ModelManifestSchema,
+} from "../../generated/1.0.0/index.js";
 
 const fixturesDir = resolve(import.meta.dirname, "fixtures");
 
@@ -72,5 +75,50 @@ describe("generated valibot — ModelDefinitionSchema", () => {
       ],
     };
     expect(safeParse(ModelDefinitionSchema, broken).success).toBe(false);
+  });
+});
+
+describe("generated valibot — ModelManifestSchema", () => {
+  it("accepts the single-entry manifest fixture", () => {
+    const data = readJson(resolve(fixturesDir, "manifest_single.json"));
+    const result = safeParse(ModelManifestSchema, data);
+    expect(
+      result.success,
+      result.success ? undefined : JSON.stringify(result.issues, null, 2)
+    ).toBe(true);
+  });
+
+  it("accepts the multi-entry manifest fixture (with $schema header)", () => {
+    const data = readJson(resolve(fixturesDir, "manifest_multi.json"));
+    const result = safeParse(ModelManifestSchema, data);
+    expect(
+      result.success,
+      result.success ? undefined : JSON.stringify(result.issues, null, 2)
+    ).toBe(true);
+  });
+
+  it("accepts the full-coverage golden manifest", () => {
+    const data = readJson(resolve(fixturesDir, "golden_full_example.json"));
+    const result = safeParse(ModelManifestSchema, data);
+    expect(
+      result.success,
+      result.success ? undefined : JSON.stringify(result.issues, null, 2)
+    ).toBe(true);
+  });
+
+  it("rejects a payload missing the `models` array", () => {
+    expect(safeParse(ModelManifestSchema, {}).success).toBe(false);
+  });
+
+  it("rejects a manifest whose entry is not a valid ModelDefinition", () => {
+    const broken = {
+      models: [{ id: "blog", modelName: "blog" }],
+    };
+    expect(safeParse(ModelManifestSchema, broken).success).toBe(false);
+  });
+
+  it("rejects a bare ModelDefinition (not wrapped in `models`)", () => {
+    const data = readJson(resolve(fixturesDir, "blog_posts.json"));
+    expect(safeParse(ModelManifestSchema, data).success).toBe(false);
   });
 });
